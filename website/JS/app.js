@@ -1,37 +1,69 @@
 /* Global Variables */
-
-
-
-
-
+//need {zip code},{country code} as parameters. USA is default for country
+const baseurl = "http://api.openweathermap.org/data/2.5/weather?zip=";
+const apiKey = "&APPID=d217e03094f9bb4e02348d2c0907bef5";
 
 // Create a new date instance dynamically with JS
 let d = new Date();
-let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
+let newDate = d.getMonth() + "." + d.getDate() + "." + d.getFullYear();
 
 document.getElementById("date").innerHTML = d;
 
-document.getElementById('generate').addEventListener('click',performAction);
-function performAction(e){
-  const generate = document.getElementById('generate').value;
+document.getElementById("generate").addEventListener("click", performAction);
+function performAction(e) {
+  const feelings = document.getElementById("feelings").value;
+  const z = document.getElementById("zip").value;
+  getTemperatureInfo(baseurl, z, apiKey).then(function(data) {
+    postData("/add", {
+      temperature: data.main.temp,
+      date: "26/12/2019",
+      userResponse: feelings
+    }).then(updateUI());
+  });
 }
 
-
-function myFunction() {
-  var z;
-
-  // Get the value of the input field with id="numb"
-  z = document.getElementById("zip").value;
-
-  // If x is Not a Number or less than one or greater than 10
-  if (isNaN(z) || (z != ([0-9]{5}))) {
-    text = "Input not valid";
-  } else {
-    text = "Input OK";
+const updateUI = async () => {
+  const request = await fetch("/all");
+  try {
+    const allData = await request.json();
+    console.log(allData);
+    document.getElementById("temp").innerHTML =
+      "TEMP is " + allData[allData.length - 1].temperature;
+    document.getElementById("content").innerHTML =
+      allData[allData.length - 1].userResponse;
+  } catch (error) {
+    console.log("error", error);
   }
-  document.getElementById("demo").innerHTML = text;
-}
+};
 
-z = z.match(/[^\s\-]+?/g).join("");
-var n = (z.length < 9) ? 5 : 9;
-re = new RegExp("^\\d{" + n + "}$");
+//postdata function
+const postData = async (url = "", data = {}) => {
+  const response = await fetch(url, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    //Body data tye must match 'Contect-Type' header
+    body: JSON.stringify(data)
+  });
+  try {
+    const newData = await response.json();
+    console.log(newData);
+    return newData;
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+//Fetch call
+const getTemperatureInfo = async (baseurl, zip, key) => {
+  const res = await fetch(baseurl + zip + key + "&units=metric");
+  try {
+    const data = await res.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log("error", error);
+  }
+};
