@@ -7,8 +7,6 @@ const apiKey = "&APPID=d217e03094f9bb4e02348d2c0907bef5";
 let d = new Date();
 let newDate = d.getMonth() + "." + d.getDate() + "." + d.getFullYear();
 
-document.getElementById("date").innerHTML = d;
-
 document.getElementById("generate").addEventListener("click", performAction);
 function performAction(e) {
   const feelings = document.getElementById("feelings").value;
@@ -16,7 +14,7 @@ function performAction(e) {
   getTemperatureInfo(baseurl, z, apiKey).then(function(data) {
     postData("/add", {
       temperature: data.main.temp,
-      date: "26/12/2019",
+      date: newDate,
       userResponse: feelings
     }).then(updateUI());
   });
@@ -31,6 +29,8 @@ const updateUI = async () => {
       "TEMP is " + allData[allData.length - 1].temperature;
     document.getElementById("content").innerHTML =
       allData[allData.length - 1].userResponse;
+    document.getElementById("date").innerHTML =
+      allData[allData.length - 1].date;
   } catch (error) {
     console.log("error", error);
   }
